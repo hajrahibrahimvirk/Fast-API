@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import uvicorn
 
 from model import predict_single_sample
 
@@ -39,8 +40,14 @@ def predict(sample: SampleData):
         if not result:
             raise HTTPException(status_code=400, detail="Prediction failed")
 
-        return {"result": result}
+        result_str = str(result)
+
+        return {"result": result_str}
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         print(error_message)  # Log the error for debugging
         raise HTTPException(status_code=500, detail=error_message)
+    
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # Listen on all interfaces
