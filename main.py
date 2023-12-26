@@ -1,41 +1,34 @@
-import pickle
-import pandas as pd
-import numpy as np
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-class SampleData(BaseModel):
-    Bp: str
-    Sg: str
-    Al: str
-    Su: str
-    Rbc: str
-    Bu: str
-    Sc: str
-    Sod: str
-    Pot: str
-    Hemo: str
-    Wbcc: str
-    Rbcc: str
+from model import predict_single_sample
 
 app = FastAPI()
 
-def predict_single_sample(sample):
-    # Create a DataFrame from the sample data
-    sample_df = pd.DataFrame([sample])
+origins = ['*']
 
-    # Load the saved model from the pickle file
-    with open('random_forest_model.pkl', 'rb') as model_file:
-        loaded_model = pickle.load(model_file)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
-    # Make predictions on the single sample
-    prediction = loaded_model.predict(sample_df)
-
-    # Convert the prediction to a dictionary
-    result_dict = {"prediction": int(prediction[0])}
-
-    return result_dict
+class SampleData(BaseModel):
+    Bp: int
+    Sg: float
+    Al: int
+    Su: int
+    Rbc: int
+    Bu: float
+    Sc: float
+    Sod: float
+    Pot: float
+    Hemo: float
+    Wbcc: int
+    Rbcc: float
 
 @app.post('/answers')
 def predict(sample: SampleData):
@@ -46,7 +39,7 @@ def predict(sample: SampleData):
         if not result:
             raise HTTPException(status_code=400, detail="Prediction failed")
 
-        return JSONResponse(content=result)
+        return {"result": result}
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         print(error_message)  # Log the error for debugging

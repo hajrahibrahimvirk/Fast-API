@@ -10,10 +10,8 @@ def predict_single_sample(sample):
     with open('random_forest_model.pkl', 'rb') as model_file:
         loaded_model = pickle.load(model_file)
 
-    # Make predictions on the single sample
     prediction = loaded_model.predict(sample_df)
-
-    return prediction
+    return prediction.tolist()
 
 # Example usage
 sample_data = {
